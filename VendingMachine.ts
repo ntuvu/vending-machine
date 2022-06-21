@@ -1,13 +1,32 @@
 import { Coin } from "./Coin";
 import { Product } from "./Product";
 
+const choice: any[][] = [
+  [Product[0], Product[1]],
+  [Product[2], console.log("cancel")],
+];
+
+const getProduct = (choose) => {
+  switch (choose) {
+    case 1:
+      return choice[0][0];
+    case 2:
+      return choice[0][1];
+    case 3:
+      return choice[1][0];
+    case 4:
+      return choice[1][1];
+  }
+};
 class VendingMachine {
   paid: number = 0;
   acceptedCoin = Coin;
   existProduct = Product;
   coinArr: any = [];
 
-  findProduct(product: any): Boolean {
+  findProduct(choose: number): Boolean {
+    const product = getProduct(choose);
+
     const selectedProduct = this.existProduct.find(
       (item) => item.name === product.name
     );
@@ -30,7 +49,9 @@ class VendingMachine {
     });
 
     if (addedCoin) {
-      this.paid =  addedCoin.reduce((sum: number, value: any) => sum + value.value);
+      this.paid = addedCoin.reduce(
+        (sum: number, value: any) => sum + value.value
+      );
     }
 
     return this.paid;
