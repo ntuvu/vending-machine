@@ -1,57 +1,68 @@
-import { Product, SelectedProduct as Init } from "./Product";
-import getProduct from "./GetProduct";
+//trong 1 cell la nhieu product
+//trong 1 vending machine la nhieu cell
+//1 san pham trong vendingmachine se de o trong 1 cell
+//1 cell la 1 mang 1 chieu, trong mang 1 chieu la cac san pham khac nhau
+//vendingmachine chi chap nhan 4 loai tien mac dinh
+//1 cell chi chua toi da 10 san pham, khi them qua san pham vao trong cell se bao loi
+
+//cac chuc nang:
+//mua san pham
+//kiem tra so luong san pham con ko
+//kiem tra so tien co du ko
+//them san pham vao trong cell
+//...
+
+//cells trong product la mang 1 chieu
+//
+
+import Cell from "./Cell";
 import { Coin } from "./Coin";
 
-export enum VendingMachineSize {
-  small = 6,
-  medium = 10,
-  large = 15,
-}
-
-class Cell {
-  constructor(product: Product) {}
-  stock: any;
-  sold: any;
-}
-
 class VendingMachine {
-  choose: any;
-  paid: any;
-  selectedCell: any = new Cell(new Init());
-  cells: any = new Array();
-  acceptedCoin: any[] = Coin;
-  canPay = () => {
-    this.paid - this.selectedCell().product.price > 0;
-  };
+  maxSize: number;
+  coin: any[];
+  choose: number;
+  selectedCell: Cell[];
+  acceptedCoin: any = Coin;
 
-  set size(givenSize: VendingMachineSize) {
-    this.cells([]);
-
-    for (let i = 0; i < givenSize; i++) {
-      let product = getProduct(this.choose);
-      this.cells.push(new Cell(product));
-    }
+  constructor(selectedCell: Cell[], choose: number) {
+    this.choose = choose;
+    this.selectedCell = selectedCell;
   }
 
-  select = (cell: Cell): void => {
-    cell.sold(false);
-    this.selectedCell(cell);
-  };
-
-  acceptCoin = (coin): void => {
-    let oldTotal = this.paid();
-    this.paid(oldTotal + coin.value);
-  };
-
-  pay = (): void => {
-    if (this.selectedCell().stock() < 1) {
-        alert("I'm sorry, we're out of them!");
-        return
+  //kien tra xem co du tien de mua san pham ko
+  canPay(total: number): boolean {
+    if (total - this.selectedCell[this.choose].product.value > 0) {
+      console.log("San pham nay co the mua");
+      return true;
     }
-    let currentPaid = this.paid();
-    this.paid(currentPaid - this.selectedCell().product.price);
-    let currentStock = this.selectedCell().stock();
-    this.selectedCell().stock(currentStock - 1);
-    this.selectedCell().sold(true);
-}
+
+    return false;
+  }
+
+  //kiem tra so tien nhet vao may co duoc chap nhan khong
+  checkcoin(): number {
+    let result = this.coin.filter((val) => {
+      return this.acceptedCoin.indexOf(val) != -1;
+    });
+
+    //tong tien them vao may sau khi da kiem tra
+    let total = result.reduce((sum, val) => {
+      sum += val.value;
+    });
+
+    return total;
+  }
+
+  //mua san pham
+  pay(): void {
+    let total: number = this.checkcoin();
+    if (this.canPay(total)) {
+      this.selectedCell[this.choose].subProduct();
+      total -= this.selectedCell[this.choose].product.value;
+      console.log("Mua thanh cong, so tien con du " + total);
+    } else {
+      console.log("Khong du tien de mua");
+    }
+  }
 }
